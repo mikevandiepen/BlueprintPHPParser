@@ -3,6 +3,7 @@
 namespace Blueprint\Builders\Generators;
 
 use PhpParser\Node\Arg;
+use Blueprint\Changelog;
 use PhpParser\BuilderFactory;
 use PhpParser\Node\Stmt\Return_;
 use Blueprint\Contracts\Generator;
@@ -25,11 +26,13 @@ final class ModelGenerator implements Generator
 
     public function process(): void
     {
+        $modelName = 'User';
+
         $factory = new BuilderFactory();
 
         $node = $factory->namespace('App' /* User defined namespace */)
             ->addStmt($factory->use('Illuminate\Database\Eloquent\Model'))
-            ->addStmt($factory->class('User' /* User Defined model name */)->extend('Model'));
+            ->addStmt($factory->class($modelName /* User Defined model name */)->extend('Model'));
 
         if (true /* Determine whether the user implements traits */) {
             $node->addStmt($factory->use('Illuminate\Notifications\Notifiable' /* Trait FullyQualifiedNamespace */)->as('Notification'))
@@ -41,7 +44,10 @@ final class ModelGenerator implements Generator
                 'hasMany' => 'post'
             ];
 
+
             foreach ($relationships as $relationship => $model) {
+                Changelog::add('Model','Relation ' . $modelName . ' ' . $relationship . ' ' . $model . ' in {{file}}');
+
                 $node->addStmt(
                     $factory->method($model)
                             ->setDocComment('/** ' . $relationship . ' ' . $model . ' */' /* Optional DocComment */)
